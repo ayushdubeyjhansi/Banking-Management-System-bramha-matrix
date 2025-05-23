@@ -1,94 +1,68 @@
 package ui;
 
-import dao.UserDAO;
 import model.Customer;
+
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 
-/**
- * Dashboard for logged-in Customer.
- */
 public class CustomerDashboard extends JFrame {
     private Customer customer;
-    private JLabel balanceLabel;
 
     public CustomerDashboard(Customer customer) {
         this.customer = customer;
-        setTitle("Customer Dashboard - Welcome " + customer.getUsername());
-        setSize(400, 300);
+        setTitle("Customer Dashboard");
+        setSize(700, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
 
-        // UI Components
-        balanceLabel = new JLabel("Current Balance: ₹" + customer.getBalance());
-        balanceLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        // Header
+        JLabel header = new JLabel("Welcome, " + customer.getUsername() + "!", JLabel.CENTER);
+        header.setFont(new Font("Arial", Font.BOLD, 24));
+        header.setOpaque(true);
+        header.setBackground(new Color(0, 120, 215));
+        header.setForeground(Color.WHITE);
+        header.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(header, BorderLayout.NORTH);
 
-        JButton depositButton = new JButton("Deposit");
-        JButton withdrawButton = new JButton("Withdraw");
-        JButton logoutButton = new JButton("Logout");
+        // Center panel for info and actions
+        JPanel centerPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Action Listeners
-        depositButton.addActionListener(e -> performTransaction(true));
-        withdrawButton.addActionListener(e -> performTransaction(false));
-        logoutButton.addActionListener(e -> logout());
+        // Account Info Panel
+        JPanel accountPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+        accountPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY), "Account Details", TitledBorder.LEFT, TitledBorder.TOP));
+        accountPanel.add(new JLabel("Username: " + customer.getUsername()));
+        accountPanel.add(new JLabel("User ID: " + customer.getId()));
+        accountPanel.add(new JLabel("Balance: ₹ " + customer.getBalance()));
+        centerPanel.add(accountPanel);
 
-        // Layout
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 1, 10, 10));
-        panel.add(balanceLabel);
-        panel.add(depositButton);
-        panel.add(withdrawButton);
-        panel.add(logoutButton);
+        // Action Buttons Panel
+        JPanel actionPanel = new JPanel(new GridLayout(4, 1, 10, 10));
+        actionPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY), "Actions", TitledBorder.LEFT, TitledBorder.TOP));
 
-        add(panel);
+        JButton depositBtn = new JButton("Deposit");
+        JButton withdrawBtn = new JButton("Withdraw");
+        JButton checkBalanceBtn = new JButton("Check Balance");
+        JButton logoutBtn = new JButton("Logout");
+
+        actionPanel.add(depositBtn);
+        actionPanel.add(withdrawBtn);
+        actionPanel.add(checkBalanceBtn);
+        actionPanel.add(logoutBtn);
+        centerPanel.add(actionPanel);
+
+        add(centerPanel, BorderLayout.CENTER);
+
+        // Logout Action
+        logoutBtn.addActionListener(e -> {
+            dispose();
+            new LoginFrame();
+        });
+
         setVisible(true);
-    }
-
-    /**
-     * Handles deposit or withdrawal.
-     */
-    private void performTransaction(boolean isDeposit) {
-        String action = isDeposit ? "Deposit" : "Withdraw";
-        String input = JOptionPane.showInputDialog(this, action + " Amount:");
-
-        try {
-            double amount = Double.parseDouble(input);
-
-            if (amount <= 0) {
-                JOptionPane.showMessageDialog(this, "Enter a positive amount.");
-                return;
-            }
-
-            double newBalance = isDeposit
-                    ? customer.getBalance() + amount
-                    : customer.getBalance() - amount;
-
-            if (!isDeposit && newBalance < 0) {
-                JOptionPane.showMessageDialog(this, "Insufficient balance.");
-                return;
-            }
-
-            boolean success = UserDAO.updateBalance(customer.getId(), newBalance);
-
-            if (success) {
-                customer.setBalance(newBalance);
-                balanceLabel.setText("Current Balance: ₹" + newBalance);
-                JOptionPane.showMessageDialog(this, action + " successful!");
-            } else {
-                JOptionPane.showMessageDialog(this, "Transaction failed. Try again.");
-            }
-
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Invalid amount entered.");
-        }
-    }
-
-    /**
-     * Logs the user out and returns to the login screen.
-     */
-    private void logout() {
-        JOptionPane.showMessageDialog(this, "Logged out.");
-        dispose();
-        new LoginFrame();
     }
 }

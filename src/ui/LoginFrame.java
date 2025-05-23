@@ -2,73 +2,65 @@ package ui;
 
 import dao.UserDAO;
 import model.Admin;
-import model.User;
 import model.Customer;
+import model.User;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 
-/**
- * Login screen for the Multi-user Banking System.
- */
 public class LoginFrame extends JFrame {
-
-    private JTextField userField;
-    private JPasswordField passField;
+    private JTextField usernameField;
+    private JPasswordField passwordField;
 
     public LoginFrame() {
-        setTitle("Banking System Login");
-        setSize(350, 200);
-        setLocationRelativeTo(null); // Center screen
+        setTitle("Login - BRAMHA MATRIX BANK");
+        setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(null);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
 
-        JLabel userLabel = new JLabel("Username:");
-        userLabel.setBounds(30, 30, 80, 25);
-        add(userLabel);
+        // Bank Title Header
+        JLabel bankTitle = new JLabel("BRAMHA MATRIX BANK", JLabel.CENTER);
+        bankTitle.setFont(new Font("Serif", Font.BOLD, 24));
+        bankTitle.setOpaque(true);
+        bankTitle.setBackground(new Color(0, 102, 204));
+        bankTitle.setForeground(Color.WHITE);
+        bankTitle.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
+        add(bankTitle, BorderLayout.NORTH);
 
-        userField = new JTextField();
-        userField.setBounds(120, 30, 180, 25);
-        add(userField);
+        // Form panel
+        JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 40, 10, 40));
 
-        JLabel passLabel = new JLabel("Password:");
-        passLabel.setBounds(30, 70, 80, 25);
-        add(passLabel);
+        formPanel.add(new JLabel("Username:"));
+        usernameField = new JTextField();
+        formPanel.add(usernameField);
 
-        passField = new JPasswordField();
-        passField.setBounds(120, 70, 180, 25);
-        add(passField);
+        formPanel.add(new JLabel("Password:"));
+        passwordField = new JPasswordField();
+        formPanel.add(passwordField);
 
         JButton loginButton = new JButton("Login");
-        loginButton.setBounds(120, 110, 100, 30);
-        add(loginButton);
+        formPanel.add(new JLabel()); // Empty label for spacing
+        formPanel.add(loginButton);
 
-        // Event handling
-        loginButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String username = userField.getText().trim();
-                String password = new String(passField.getPassword()).trim();
+        add(formPanel, BorderLayout.CENTER);
 
-                if (username.isEmpty() || password.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Please enter both fields.");
-                    return;
+        // Login button action
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+
+            User user = UserDAO.login(username, password);
+            if (user != null) {
+                dispose();
+                if (user instanceof Customer) {
+                    new CustomerDashboard((Customer) user);
+                } else if (user instanceof Admin) {
+                    new AdminDashboard((Admin) user);
                 }
-
-                User user = UserDAO.login(username, password);
-
-                if (user != null) {
-                    if (user instanceof Admin) {
-                        Admin admin = (Admin) user;
-                        new AdminDashboard(admin);
-                        dispose(); // close login window
-                    } else if (user instanceof Customer) {
-                        new CustomerDashboard((Customer) user);
-                        dispose();
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Invalid credentials. Try again.");
-                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
         });
 
