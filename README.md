@@ -16,8 +16,4 @@ This is a Java-based GUI banking application using Swing and MySQL. It supports 
 - JDBC
 - IntelliJ IDEA
 
-## Setup
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/ayushdubeyjhansi/Banking-Management-System-bramha-matrix.git
