@@ -7,6 +7,8 @@ import model.Customer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -48,6 +50,39 @@ public class AdminDashboard extends JFrame {
         loadUsers(); // Load users at startup
         setVisible(true);
     }
+    // Inside your AdminDashboard class
+
+    private void viewAllTransactions() {
+        try {
+            Connection conn = db.DBConnection.getConnection();
+            dao.TransactionDAO transactionDAO = new dao.TransactionDAO(conn);
+            java.util.List<model.Transaction> transactions = transactionDAO.getAllTransactions();
+
+            String[] columnNames = {"Transaction ID", "User ID", "Type", "Amount", "Date"};
+            Object[][] data = new Object[transactions.size()][5];
+
+            for (int i = 0; i < transactions.size(); i++) {
+                model.Transaction txn = transactions.get(i);
+                data[i][0] = txn.getTxnId();
+                data[i][1] = txn.getUserId();
+                data[i][2] = txn.getType();
+                data[i][3] = txn.getAmount();
+                data[i][4] = txn.getTxnDate();
+            }
+
+            javax.swing.JTable table = new javax.swing.JTable(data, columnNames);
+            javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(table);
+            javax.swing.JFrame frame = new javax.swing.JFrame("All Transactions");
+            frame.add(scrollPane);
+            frame.setSize(800, 400);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+
+        } catch (SQLException e) {
+            javax.swing.JOptionPane.showMessageDialog(null, "Error fetching transactions: " + e.getMessage());
+        }
+    }
+
 
     /**
      * Loads all customer users into the table.
